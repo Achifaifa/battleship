@@ -109,8 +109,8 @@ class arena:
     if self.arenarray[y][x]==".": 
       self.arenarray[y][x]="A"
       playa.oil+=1
-      return "Oil rig built in (%i,%i)"%(x,y)
-    else: return "You can't place it there!"
+      return 1,"Oil rig built in (%i,%i)"%(x,y)
+    else: return 0,"You can't place it there!"
 
 class player:
   """
@@ -229,8 +229,8 @@ def game(humanplayer):
       loopvar=loopvar.split(',')
       if loopvar[0]=="oil":
         if humanplayer.credits>=10:
-          humanplayer.credits-=10
-          turnmsg=varena.addoil(int(loopvar[1])-1,int(loopvar[2])-1,humanplayer)
+          oilv,turnmsg=varena.addoil(int(loopvar[1])-1,int(loopvar[2])-1,humanplayer)
+          if oilv: humanplayer.credits-=10
         else: turnmsg="Not enough credits"
       elif loopvar[0]=="bomb":
         if humanplayer.credits>=5:
