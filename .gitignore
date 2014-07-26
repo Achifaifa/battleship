@@ -2,6 +2,7 @@
 *.~
 *.sh~
 .directory
+*.pyc
 
 #Backups, packages, etc
 
