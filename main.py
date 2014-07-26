@@ -38,20 +38,23 @@ class ship:
     var=0
     while tsize!=0:
       if aren.arenarray[pos[1]][pos[0]]=="~":
-        tsize-=1
-        var+=1
-        if direc: 
-          if aren.arenarray[pos[1]+var][pos[0]]=="~":
-            self.coords.append([self.coords[0][0],self.coords[0][1]+var,"O"])
-          else: 
-            self.coords=[]
-            1/0
-        else:     
-          if aren.arenarray[pos[1]][pos[0]+var]=="~":
-            self.coords.append([self.coords[0][0]+var,self.coords[0][1],"O"])
-          else: 
-            self.coords=[]
-            1/0
+        try:
+          tsize-=1
+          var+=1
+          if direc: 
+            if aren.arenarray[pos[1]+var][pos[0]]=="~":
+              self.coords.append([self.coords[0][0],self.coords[0][1]+var,"O"])
+            else: 
+              self.coords=[]
+              1/0
+          else:     
+            if aren.arenarray[pos[1]][pos[0]+var]=="~":
+              self.coords.append([self.coords[0][0]+var,self.coords[0][1],"O"])
+            else: 
+              self.coords=[]
+              1/0
+        except:
+          1/0
         
       else: 
         self.coords=[]
@@ -84,6 +87,7 @@ class arena:
 
     #Default to 10x10
     if size<10: size=10
+    self.size=size
 
     #Generate your grid
     self.arenarray=[]
@@ -99,6 +103,13 @@ class arena:
       for j in range(size):
         self.targetarray[i].append("~")
 
+  def addoil(self,x,y,playa):
+    if self.arenarray[y][x]=="~": 
+      self.arenarray[y][x]="A"
+      playa.oil+=1
+      return "Oil rig built in (%i,%i)"%(x,y)
+    else: return "You can't place it there!"
+
 class player:
   """
   blabla
@@ -108,6 +119,8 @@ class player:
     self.name=name
     self.money=10
     self.ships=[]
+    self.oil=0
+    self.credits=10
 
   def receivehit(self,x,y):
     for ship in self.ships:
@@ -127,6 +140,7 @@ def game(humanplayer):
   totalships={"fishing boat (2)":3,"bigger fishing boat (3)":2,"battleboat (4)":1,"carrier (5)":1}
   turnmsg=""
   numbers=[1,2,3,4,5,6,7,8,9,0]
+  autoplacevar=0
 
   #Ship placement screen
   os.system('clear')
@@ -140,43 +154,68 @@ def game(humanplayer):
         for k,j in zip(varena.arenarray,numbers): print str(j)+" "+''.join(map(str,k))
 
         print "\nPlace your ships with (xcoord,ycoord,vert)"
+        print "Type 'autoplace' to randomly distribute your ships"
         print "Now place your %s"%type
-        placevar=raw_input(">>>")
-        placevar=placevar.split(',')
-        try:
-          humanplayer.ships.append(ship(int(type.partition('(')[2].partition(')')[0]),[int(placevar[0])-1,int(placevar[1])-1],int(placevar[2]),varena))
-          for i in humanplayer.ships[-1].coords: varena.arenarray[i[1]][i[0]]="O"
-          break
-        except ZeroDivisionError: 
-          print "There is something in the way!"
-          getch()
+        if not autoplacevar: placevar=raw_input(">>>")
+        if placevar=="autoplace": autoplacevar=1
+        #Player action block
+        if autoplacevar:
+          try:
+            humanplayer.ships.append(ship(int(type.partition('(')[2].partition(')')[0]),[random.randrange(varena.size),random.randrange(varena.size)],random.choice([0,1]),varena))
+            for i in humanplayer.ships[-1].coords: varena.arenarray[i[1]][i[0]]="O"
+            break
+          except ZeroDivisionError:
+            pass
+        else:
+          placevar=placevar.split(',')
+          try:
+            humanplayer.ships.append(ship(int(type.partition('(')[2].partition(')')[0]),[int(placevar[0])-1,int(placevar[1])-1],int(placevar[2]),varena))
+            for i in humanplayer.ships[-1].coords: varena.arenarray[i[1]][i[0]]="O"
+            break
+          except ZeroDivisionError: 
+            print "There is something in the way!"
+            getch()
+          except:
+            print "nope"
+            getch()
         
   #Main game loop
   while 1:
     os.system('clear')
     #Print stuff
-    print gamename
-    print "%s VS %s" %(humanplayer.name,AIplayer.name)
+    print "%s (%s VS %s)" %(gamename,humanplayer.name,AIplayer.name)
     print "\nTarget screen     Your area"
     print "  1234567890      1234567890"
     for i,j,k,l in zip(varena.targetarray,numbers,varena.arenarray,numbers): 
       print str(j)+" "+''.join(map(str,i))+"    "+str(l)+" "+''.join(map(str,k))
-
+    print "Ships: %i, Credits: %i -- Oil rigs: %i (%ic/turn)"%(len(humanplayer.ships),humanplayer.credits,humanplayer.oil,humanplayer.oil*1.5)
+    print "Enemy ships: %i"%(len(AIplayer.ships))
     print "\n%s"%turnmsg
     print "type the building, action and/or coordinates"
-    print "e.g., 'oil,6,3' or 'bomb,5,0'"
+    print "e.g., 'oil,6,3' (cost 10c) or 'bomb,5,0' (cost 5c)"
     print "type F to surrender"
 
     #wait for action
     loopvar=raw_input(">>>")
     if loopvar=="f": break
-    else:
+    elif len(loopvar.split(','))==3:
       loopvar=loopvar.split(',')
       if loopvar[0]=="oil":
-        turnmsg="You built an oil rig in (%s,%s)"%(loopvar[1],loopvar[2])
+        if humanplayer.credits>=10:
+          humanplayer.credits-=10
+          turnmsg=varena.addoil(int(loopvar[1])-1,int(loopvar[2])-1,humanplayer)
+        else: turnmsg="Not enough credits"
       elif loopvar[0]=="bomb":
-        turnmsg="You dropped a bomb at (%s,%s) \n%s"%(loopvar[1],loopvar[2],AIplayer.receivehit(int(loopvar[1]),int(loopvar[2])))
+        if humanplayer.credits>=5:
+          humanplayer.credits-=5
+          turnmsg="You dropped a bomb at (%s,%s) \n%s"%(loopvar[1],loopvar[2],AIplayer.receivehit(int(loopvar[1]),int(loopvar[2])))
+        else:turnmsg="Not enough credits"
       else: turnmsg="Not valid, try again"
+    else: turnmsg="nope"
+
+    #End of turn
+    humanplayer.credits+=(humanplayer.oil*1.5)+1
+    AIplayer.credits+=(AIplayer.oil*1.5)+1
 
 def getch():
   """
