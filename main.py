@@ -140,7 +140,7 @@ class player:
       if hit: 
         varena.arenarray[y][x]="X"
         return "It's a hit!"
-    varena.arenarray[y][x]="~"
+    if varena.arenarray[y][x]!="A": varena.arenarray[y][x]="~"
     return "miss"
     return 0,[-1,-1]
 
@@ -214,7 +214,7 @@ def game(humanplayer):
     print "  1234567890      1234567890"
     for i,j,k,l in zip(varena.targetarray,numbers,varena.arenarray,numbers): 
       print str(j)+" "+''.join(map(str,i))+"    "+str(l)+" "+''.join(map(str,k))
-    print "Ships: %i, Credits: %i -- Oil rigs: %i (%ic/turn)"%(len(humanplayer.ships),humanplayer.credits,humanplayer.oil,humanplayer.oil*1.5)
+    print "Ships: %i, Credits: %i -- Oil rigs: %i (%ic/turn)"%(len(humanplayer.ships),humanplayer.credits,humanplayer.oil,(humanplayer.oil*1.5)+1)
     print "Enemy ships: %i"%(len(AIplayer.ships))
     print "\n%s"%turnmsg
     print "type the building, action and/or coordinates"
