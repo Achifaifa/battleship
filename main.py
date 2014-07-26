@@ -82,12 +82,22 @@ class arena:
     I wanted to make a circular one but meh. Just imagine it and don't place anything in the corners.
     """
 
+    #Default to 10x10
     if size<10: size=10
+
+    #Generate your grid
     self.arenarray=[]
     for i in range(size):
       self.arenarray.append([])
       for j in range(size):
         self.arenarray[i].append("~")
+
+    #Generate target grid
+    self.targetarray=[]
+    for i in range(size):
+      self.targetarray.append([])
+      for j in range(size):
+        self.targetarray[i].append("~")
 
 class player:
   """
@@ -118,7 +128,7 @@ def game(humanplayer):
   turnmsg=""
   numbers=[1,2,3,4,5,6,7,8,9,0]
 
-  #Ship placement!
+  #Ship placement screen
   os.system('clear')
   for type in totalships:
     for i in range(totalships[type]):
@@ -138,21 +148,22 @@ def game(humanplayer):
           for i in humanplayer.ships[-1].coords: varena.arenarray[i[1]][i[0]]="O"
           break
         except ZeroDivisionError: 
-          print "There is a ship in the way!"
+          print "There is something in the way!"
           getch()
         
-          
-
+  #Main game loop
   while 1:
     os.system('clear')
     #Print stuff
     print gamename
     print "%s VS %s" %(humanplayer.name,AIplayer.name)
-    print "  1234567890"
-    for i,j in zip(varena.arenarray,numbers): print str(j)+" "+''.join(map(str,i))
+    print "\nTarget screen     Your area"
+    print "  1234567890      1234567890"
+    for i,j,k,l in zip(varena.targetarray,numbers,varena.arenarray,numbers): 
+      print str(j)+" "+''.join(map(str,i))+"    "+str(l)+" "+''.join(map(str,k))
 
     print "\n%s"%turnmsg
-    print "\ntype the building, action and/or coordinates"
+    print "type the building, action and/or coordinates"
     print "e.g., 'oil,6,3' or 'bomb,5,0'"
     print "type F to surrender"
 
