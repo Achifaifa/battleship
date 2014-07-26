@@ -13,7 +13,7 @@ class ship:
   XXXXXXXXXXX <- This is a ship shipping ship, shipping shipping ships
   """
 
-  def __init__(self,size,pos,direc):
+  def __init__(self,size,pos,direc,aren):
     """
     size:lenght of the ship
     pos: Initial position (array [x,y])
@@ -33,14 +33,29 @@ class ship:
     tpos.append("O")
     self.coords=[]
     self.coords.append(tpos)
-    tsize=size
+    tsize=self.size
     tsize-=1
+    var=0
     while tsize!=0:
-      tsize-=1
-      if direc:
-        self.coords.append([self.coords[0][0],self.coords[0][1]+1,"O"])
-      else:
-        self.coords.append([self.coords[0][0]+1,self.coords[0][1],"O"])
+      if aren.arenarray[pos[1]][pos[0]]=="~":
+        tsize-=1
+        var+=1
+        if direc: 
+          if aren.arenarray[pos[1]+var][pos[0]]=="~":
+            self.coords.append([self.coords[0][0],self.coords[0][1]+var,"O"])
+          else: 
+            self.coords=[]
+            1/0
+        else:     
+          if aren.arenarray[pos[1]][pos[0]+var]=="~":
+            self.coords.append([self.coords[0][0]+var,self.coords[0][1],"O"])
+          else: 
+            self.coords=[]
+            1/0
+        
+      else: 
+        self.coords=[]
+        1/0
 
   def launch(self,targetx,targety):
     """
@@ -112,15 +127,20 @@ def game(humanplayer):
         print gamename
         print "%s VS %s" %(humanplayer.name,AIplayer.name)
         print "  1234567890"
-        for i,j in zip(varena.arenarray,numbers): print str(j)+" "+''.join(map(str,i))
+        for k,j in zip(varena.arenarray,numbers): print str(j)+" "+''.join(map(str,k))
 
         print "\nPlace your ships with (xcoord,ycoord,vert)"
         print "Now place your %s"%type
         placevar=raw_input(">>>")
         placevar=placevar.split(',')
-        humanplayer.ships.append(ship(int(type.partition('(')[2].partition(')')[0]),[int(placevar[0])-1,int(placevar[1])-1],int(placevar[2])))
-        for i in humanplayer.ships[-1].coords:
-          varena.arenarray[i[1]][i[0]]="O"
+        try:
+          humanplayer.ships.append(ship(int(type.partition('(')[2].partition(')')[0]),[int(placevar[0])-1,int(placevar[1])-1],int(placevar[2]),varena))
+          for i in humanplayer.ships[-1].coords: varena.arenarray[i[1]][i[0]]="O"
+          break
+        except ZeroDivisionError: 
+          print "There is a ship in the way!"
+          getch()
+        
           
 
   while 1:
