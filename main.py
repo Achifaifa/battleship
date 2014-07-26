@@ -124,13 +124,23 @@ class player:
     self.oil=0
     self.credits=10
 
-  def receivehit(self,x,y,varena):
+  def aireceivehit(self,x,y,varena):
     for ship in self.ships:
       hit,coords=ship.launch(x,y)
       if hit: 
         varena.targetarray[y][x]="X"
         return "It's a hit!"
     varena.targetarray[y][x]="~"
+    return "miss"
+    return 0,[-1,-1]
+
+  def humanreceivehit(self,x,y,varena):
+    for ship in self.ships:
+      hit,coords=ship.launch(x,y)
+      if hit: 
+        varena.arenarray[y][x]="X"
+        return "It's a hit!"
+    varena.arenarray[y][x]="~"
     return "miss"
     return 0,[-1,-1]
 
@@ -225,7 +235,7 @@ def game(humanplayer):
       elif loopvar[0]=="bomb":
         if humanplayer.credits>=5:
           try:
-            turnmsg="You dropped a bomb at (%s,%s) \n%s\n"%(loopvar[1],loopvar[2],AIplayer.receivehit(int(loopvar[1])-1,int(loopvar[2])-1,varena))
+            turnmsg="You dropped a bomb at (%s,%s) \n%s\n"%(loopvar[1],loopvar[2],AIplayer.aireceivehit(int(loopvar[1])-1,int(loopvar[2])-1,varena))
             humanplayer.credits-=5
           except ValueError: pass
         else:turnmsg="Not enough credits"
@@ -233,8 +243,8 @@ def game(humanplayer):
     else: turnmsg="nope"
 
     #AI moves
-    randx,randy=random.randint(1,10),random.randint(1,10)
-    humanplayer.receivehit(randx,randy,varena)
+    randx,randy=random.randrange(len(varena.arenarray)),random.randrange(len(varena.arenarray))
+    humanplayer.humanreceivehit(randx,randy,varena)
     if varena.arenarray[randy][randx]=="A":
       humanplayer.oil-=1
       varena.arenarray[randy][randx]="X"
