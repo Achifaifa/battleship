@@ -122,10 +122,14 @@ class player:
     self.oil=0
     self.credits=10
 
-  def receivehit(self,x,y):
+  def receivehit(self,x,y,varena):
     for ship in self.ships:
       hit,coords=ship.launch(x,y)
-      if hit: return "It's a hit!",coords
+      if hit: 
+        varena.targetarray[y][x]="X"
+        return "It's a hit!"
+    varena.targetarray[y][x]="."
+    return "miss"
     return 0,[-1,-1]
 
 def game(humanplayer):
@@ -178,6 +182,9 @@ def game(humanplayer):
           except:
             print "nope"
             getch()
+
+  #AI ship placing
+  #PENDING
         
   #Main game loop
   while 1:
@@ -208,7 +215,7 @@ def game(humanplayer):
       elif loopvar[0]=="bomb":
         if humanplayer.credits>=5:
           humanplayer.credits-=5
-          turnmsg="You dropped a bomb at (%s,%s) \n%s"%(loopvar[1],loopvar[2],AIplayer.receivehit(int(loopvar[1]),int(loopvar[2])))
+          turnmsg="You dropped a bomb at (%s,%s) \n%s\n"%(loopvar[1],loopvar[2],AIplayer.receivehit(int(loopvar[1])-1,int(loopvar[2])-1,varena))
         else:turnmsg="Not enough credits"
       else: turnmsg="Not valid, try again"
     else: turnmsg="nope"
