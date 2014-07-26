@@ -9,8 +9,9 @@ class ship:
   X -> small ship
   etc etc etc
 
+  X  X  X
   XX XX XX 
-  XXXXXXXXXXX <- This is a ship shipping ship, shipping shipping ships
+  XXXXXXXXXXX <- This is a ship shipping ship shipping ship, shipping shipping ships shipping ships
   """
 
   def __init__(self,size,pos,direc,aren):
@@ -57,6 +58,7 @@ class ship:
           1/0
         
       else: 
+        #Using 1/0 because I'm too lazy to code actual exceptions
         self.coords=[]
         1/0
 
@@ -101,7 +103,7 @@ class arena:
     for i in range(size):
       self.targetarray.append([])
       for j in range(size):
-        self.targetarray[i].append("~")
+        self.targetarray[i].append(".")
 
   def addoil(self,x,y,playa):
     if self.arenarray[y][x]=="~": 
@@ -128,7 +130,7 @@ class player:
       if hit: 
         varena.targetarray[y][x]="X"
         return "It's a hit!"
-    varena.targetarray[y][x]="."
+    varena.targetarray[y][x]="~"
     return "miss"
     return 0,[-1,-1]
 
@@ -184,7 +186,14 @@ def game(humanplayer):
             getch()
 
   #AI ship placing
-  #PENDING
+  for type in totalships:
+    for i in range(totalships[type]):
+      while 1:
+        try:
+          AIplayer.ships.append(ship(int(type.partition('(')[2].partition(')')[0]),[random.randrange(varena.size),random.randrange(varena.size)],random.choice([0,1]),varena))
+          break
+        except ZeroDivisionError:
+          pass
         
   #Main game loop
   while 1:
@@ -221,9 +230,44 @@ def game(humanplayer):
     else: turnmsg="nope"
 
     #End of turn
+
+    #Add credits
     humanplayer.credits+=(humanplayer.oil*1.5)+1
     AIplayer.credits+=(AIplayer.oil*1.5)+1
 
+    #Delete sunk ship shipping ship shipping ships shipping ship shipping ships shipping ships and the ships and ship shipping ships shipped.
+    for i in humanplayer.ships:
+      deletevar=1
+      for j in i.coords:
+        if j[2]=="O":deletevar=0
+      if deletevar: del humanplayer.ships[humanplayer.ships.index(i)]
+    for i in AIplayer.ships:
+      deletevar=1
+      for j in i.coords:
+        if j[2]=="O":deletevar=0
+      if deletevar: del AIplayer.ships[AIplayer.ships.index(i)]
+
+    #End the game if a player has no ships left
+    if len(AIplayer.ships)==0 or len(humanplayer.ships)==0: 
+      break
+      gameover(AIplayer,humanplayer)
+
+def gameover(computer,human):
+  """
+  Displays the end of game screen
+  """
+
+  os.system('clear')
+  print "%s (%s VS %s)\n" %(gamename,human.name,computer.name)
+
+  if len(computer.ships)==0 and len(human.ships)!=0:
+    print "You won! And you still had %i ships left!"%len(human.ships)
+  else:
+    print "You lost"
+  print "\npress any key to continue"
+  getch()
+
+#Does not work in windows because termios but who cares.
 def getch():
   """
   Reads a single key from the console input*. Code by Joeyespo:
@@ -239,7 +283,6 @@ def getch():
     return sys.stdin.read(1)
   finally:
     termios.tcsetattr(fd, termios.TCSADRAIN, old) 
-
 
 if __name__=="__main__":
   while 1:
