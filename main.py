@@ -38,7 +38,7 @@ class ship:
     while tsize!=0:
       tsize-=1
       if direc:
-        self.coords.append([self.coords[0][0],self.coords[0][1]+1],"O")
+        self.coords.append([self.coords[0][0],self.coords[0][1]+1,"O"])
       else:
         self.coords.append([self.coords[0][0]+1,self.coords[0][1],"O"])
 
@@ -86,7 +86,9 @@ class player:
 
   def receivehit(self,x,y):
     for ship in self.ships:
-      if ship.launch(x,y):
+      hit,coords=ship.launch(x,y)
+      if hit: return "It's a hit!",coords
+    return 0,[-1,-1]
 
 def game(humanplayer):
   """
@@ -116,8 +118,10 @@ def game(humanplayer):
         print "Now place your %s"%type
         placevar=raw_input(">>>")
         placevar=placevar.split(',')
-
-
+        humanplayer.ships.append(ship(int(type.partition('(')[2].partition(')')[0]),[int(placevar[0])-1,int(placevar[1])-1],int(placevar[2])))
+        for i in humanplayer.ships[-1].coords:
+          varena.arenarray[i[1]][i[0]]="O"
+          
 
   while 1:
     os.system('clear')
@@ -140,9 +144,8 @@ def game(humanplayer):
       if loopvar[0]=="oil":
         turnmsg="You built an oil rig in (%s,%s)"%(loopvar[1],loopvar[2])
       elif loopvar[0]=="bomb":
-        turnmsg="You dropped a bomb at (%s,%s) \n%s"%(loopvar[1],loopvar[2],"more info")
+        turnmsg="You dropped a bomb at (%s,%s) \n%s"%(loopvar[1],loopvar[2],AIplayer.receivehit(int(loopvar[1]),int(loopvar[2])))
       else: turnmsg="Not valid, try again"
-
 
 def getch():
   """
