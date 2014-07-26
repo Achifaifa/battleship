@@ -38,18 +38,18 @@ class ship:
     tsize-=1
     var=0
     while tsize!=0:
-      if aren.arenarray[pos[1]][pos[0]]=="~":
+      if aren.arenarray[pos[1]][pos[0]]==".":
         try:
           tsize-=1
           var+=1
           if direc: 
-            if aren.arenarray[pos[1]+var][pos[0]]=="~":
+            if aren.arenarray[pos[1]+var][pos[0]]=="." and pos[1]+var<10:
               self.coords.append([self.coords[0][0],self.coords[0][1]+var,"O"])
             else: 
               self.coords=[]
               1/0
           else:     
-            if aren.arenarray[pos[1]][pos[0]+var]=="~":
+            if aren.arenarray[pos[1]][pos[0]+var]=="." and pos[2]+var<10:
               self.coords.append([self.coords[0][0]+var,self.coords[0][1],"O"])
             else: 
               self.coords=[]
@@ -96,7 +96,7 @@ class arena:
     for i in range(size):
       self.arenarray.append([])
       for j in range(size):
-        self.arenarray[i].append("~")
+        self.arenarray[i].append(".")
 
     #Generate target grid
     self.targetarray=[]
@@ -106,7 +106,7 @@ class arena:
         self.targetarray[i].append(".")
 
   def addoil(self,x,y,playa):
-    if self.arenarray[y][x]=="~": 
+    if self.arenarray[y][x]==".": 
       self.arenarray[y][x]="A"
       playa.oil+=1
       return "Oil rig built in (%i,%i)"%(x,y)
@@ -143,7 +143,7 @@ def game(humanplayer):
   varena=arena(-1)
   #Generate """"AI"""" player
   AIplayer=player(random.choice(["Hiei","Musashi","Iku","Hachi"]))
-  totalships={"fishing boat (2)":3,"bigger fishing boat (3)":2,"battleboat (4)":1,"carrier (5)":1}
+  totalships={"fishing boat (2)":2,"bigger fishing boat (3)":2,"battleboat (4)":1,"carrier (5)":1}
   turnmsg=""
   numbers=[1,2,3,4,5,6,7,8,9,0]
   autoplacevar=0
@@ -212,6 +212,7 @@ def game(humanplayer):
     print "type F to surrender"
 
     #wait for action
+    turnmsg=""
     loopvar=raw_input(">>>")
     if loopvar=="f": break
     elif len(loopvar.split(','))==3:
@@ -223,11 +224,25 @@ def game(humanplayer):
         else: turnmsg="Not enough credits"
       elif loopvar[0]=="bomb":
         if humanplayer.credits>=5:
-          humanplayer.credits-=5
-          turnmsg="You dropped a bomb at (%s,%s) \n%s\n"%(loopvar[1],loopvar[2],AIplayer.receivehit(int(loopvar[1])-1,int(loopvar[2])-1,varena))
+          try:
+            turnmsg="You dropped a bomb at (%s,%s) \n%s\n"%(loopvar[1],loopvar[2],AIplayer.receivehit(int(loopvar[1])-1,int(loopvar[2])-1,varena))
+            humanplayer.credits-=5
+          except ValueError: pass
         else:turnmsg="Not enough credits"
       else: turnmsg="Not valid, try again"
     else: turnmsg="nope"
+
+    #AI moves
+    randx,randy=random.randint(1,10),random.randint(1,10)
+    humanplayer.receivehit(randx,randy,varena)
+    if varena.arenarray[randy][randx]=="A":
+      humanplayer.oil-=1
+      varena.arenarray[randy][randx]="X"
+      turnmsg="One of your oil rigs has been destroyed!"
+    if varena.arenarray[randy][randx]=="O":
+      varena.arenarray[randy][randx]="X"
+      turnmsg="One of your ships has been hit!"
+
 
     #End of turn
 
